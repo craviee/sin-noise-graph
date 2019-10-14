@@ -1,0 +1,12 @@
+Usefull links:
+https://stackoverflow.com/questions/32889309/adding-gaussian-noise
+https://en.cppreference.com/w/cpp/numeric/random/normal_distribution
+https://www.mathworks.com/help/comm/ref/awgn.html
+https://doc.qt.io/qt-5/qtcharts-chartthemes-example.html
+
+Description of time:
+
+14/10/19 - 8~10 - 2h
+Studying the problem, planning software architecture,
+creating the project using ChartThemes as template (https://doc.qt.io/qt-5/qtcharts-chartthemes-example.html),
+setting repo on github, making GUI changes, creating this log file and cleaning methods that won't be used.

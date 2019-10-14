@@ -66,12 +66,7 @@ private:
     void populateAnimationBox();
     void populateLegendBox();
     void connectSignals();
-    QChart *createAreaChart() const;
-    QChart *createBarChart(int valueCount) const;
-    QChart *createPieChart() const;
     QChart *createLineChart() const;
-    QChart *createSplineChart() const;
-    QChart *createScatterChart() const;
 
 private:
     int m_listCount;

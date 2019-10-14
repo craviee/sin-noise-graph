@@ -72,33 +72,11 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
 
     QChartView *chartView;
 
-    // chartView = new QChartView(createAreaChart());
-    // m_ui->gridLayout->addWidget(chartView, 1, 0);
-    // m_charts << chartView;
-
-    // chartView = new QChartView(createPieChart());
-    // // Funny things happen if the pie slice labels do not fit the screen, so we ignore size policy
-    // chartView->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    // m_ui->gridLayout->addWidget(chartView, 1, 1);
-    // m_charts << chartView;
-
     //![5]
     chartView = new QChartView(createLineChart());
     m_ui->gridLayout->addWidget(chartView, 1, 2);
     //![5]
     m_charts << chartView;
-
-    // chartView = new QChartView(createBarChart(m_valueCount));
-    // m_ui->gridLayout->addWidget(chartView, 2, 0);
-    // m_charts << chartView;
-
-    // chartView = new QChartView(createSplineChart());
-    // m_ui->gridLayout->addWidget(chartView, 2, 1);
-    // m_charts << chartView;
-
-    // chartView = new QChartView(createScatterChart());
-    // m_ui->gridLayout->addWidget(chartView, 2, 2);
-    // m_charts << chartView;
 
     // Set defaults
     m_ui->antialiasCheckBox->setChecked(true);
@@ -170,69 +148,6 @@ void ThemeWidget::populateLegendBox()
     m_ui->legendComboBox->addItem("Legend Right", Qt::AlignRight);
 }
 
-QChart *ThemeWidget::createAreaChart() const
-{
-    QChart *chart = new QChart();
-    chart->setTitle("Area chart");
-
-    // The lower series initialized to zero values
-    QLineSeries *lowerSeries = 0;
-    QString name("Series ");
-    int nameIndex = 0;
-    for (int i(0); i < m_dataTable.count(); i++) {
-        QLineSeries *upperSeries = new QLineSeries(chart);
-        for (int j(0); j < m_dataTable[i].count(); j++) {
-            Data data = m_dataTable[i].at(j);
-            if (lowerSeries) {
-                const QVector<QPointF>& points = lowerSeries->pointsVector();
-                upperSeries->append(QPointF(j, points[i].y() + data.first.y()));
-            } else {
-                upperSeries->append(QPointF(j, data.first.y()));
-            }
-        }
-        QAreaSeries *area = new QAreaSeries(upperSeries, lowerSeries);
-        area->setName(name + QString::number(nameIndex));
-        nameIndex++;
-        chart->addSeries(area);
-        lowerSeries = upperSeries;
-    }
-
-    chart->createDefaultAxes();
-    chart->axes(Qt::Horizontal).first()->setRange(0, m_valueCount - 1);
-    chart->axes(Qt::Vertical).first()->setRange(0, m_valueMax);
-    // Add space to label to add space between labels and axis
-    QValueAxis *axisY = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first());
-    Q_ASSERT(axisY);
-    axisY->setLabelFormat("%.1f  ");
-
-    return chart;
-}
-
-QChart *ThemeWidget::createBarChart(int valueCount) const
-{
-    Q_UNUSED(valueCount);
-    QChart *chart = new QChart();
-    chart->setTitle("Bar chart");
-
-    QStackedBarSeries *series = new QStackedBarSeries(chart);
-    for (int i(0); i < m_dataTable.count(); i++) {
-        QBarSet *set = new QBarSet("Bar set " + QString::number(i));
-        for (const Data &data : m_dataTable[i])
-            *set << data.first.y();
-        series->append(set);
-    }
-    chart->addSeries(series);
-
-    chart->createDefaultAxes();
-    chart->axes(Qt::Vertical).first()->setRange(0, m_valueMax * 2);
-    // Add space to label to add space between labels and axis
-    QValueAxis *axisY = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first());
-    Q_ASSERT(axisY);
-    axisY->setLabelFormat("%.1f  ");
-
-    return chart;
-}
-
 QChart *ThemeWidget::createLineChart() const
 {
     //![1]
@@ -265,79 +180,6 @@ QChart *ThemeWidget::createLineChart() const
     axisY->setLabelFormat("%.1f  ");
     //![4]
 
-    return chart;
-}
-
-QChart *ThemeWidget::createPieChart() const
-{
-    QChart *chart = new QChart();
-    chart->setTitle("Pie chart");
-
-    QPieSeries *series = new QPieSeries(chart);
-    for (const Data &data : m_dataTable[0]) {
-        QPieSlice *slice = series->append(data.second, data.first.y());
-        if (data == m_dataTable[0].first()) {
-            // Show the first slice exploded with label
-            slice->setLabelVisible();
-            slice->setExploded();
-            slice->setExplodeDistanceFactor(0.5);
-        }
-    }
-    series->setPieSize(0.4);
-    chart->addSeries(series);
-
-    return chart;
-}
-
-QChart *ThemeWidget::createSplineChart() const
-{
-    QChart *chart = new QChart();
-    chart->setTitle("Spline chart");
-    QString name("Series ");
-    int nameIndex = 0;
-    for (const DataList &list : m_dataTable) {
-        QSplineSeries *series = new QSplineSeries(chart);
-        for (const Data &data : list)
-            series->append(data.first);
-        series->setName(name + QString::number(nameIndex));
-        nameIndex++;
-        chart->addSeries(series);
-    }
-
-    chart->createDefaultAxes();
-    chart->axes(Qt::Horizontal).first()->setRange(0, m_valueMax);
-    chart->axes(Qt::Vertical).first()->setRange(0, m_valueCount);
-
-    // Add space to label to add space between labels and axis
-    QValueAxis *axisY = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first());
-    Q_ASSERT(axisY);
-    axisY->setLabelFormat("%.1f  ");
-    return chart;
-}
-
-QChart *ThemeWidget::createScatterChart() const
-{
-    // scatter chart
-    QChart *chart = new QChart();
-    chart->setTitle("Scatter chart");
-    QString name("Series ");
-    int nameIndex = 0;
-    for (const DataList &list : m_dataTable) {
-        QScatterSeries *series = new QScatterSeries(chart);
-        for (const Data &data : list)
-            series->append(data.first);
-        series->setName(name + QString::number(nameIndex));
-        nameIndex++;
-        chart->addSeries(series);
-    }
-
-    chart->createDefaultAxes();
-    chart->axes(Qt::Horizontal).first()->setRange(0, m_valueMax);
-    chart->axes(Qt::Vertical).first()->setRange(0, m_valueCount);
-    // Add space to label to add space between labels and axis
-    QValueAxis *axisY = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first());
-    Q_ASSERT(axisY);
-    axisY->setLabelFormat("%.1f  ");
     return chart;
 }
 
