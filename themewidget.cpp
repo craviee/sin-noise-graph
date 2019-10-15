@@ -42,15 +42,14 @@
 #include <QtCharts/QBarCategoryAxis>
 #include <QtWidgets/QApplication>
 #include <QtCharts/QValueAxis>
-#include<QDebug>
+#include <QDebug>
+#include <QPushButton>
 
 ThemeWidget::ThemeWidget(QWidget *parent) :
     QWidget(parent),
-    m_listCount(1),
-    m_valueMax(10),
-    m_valueCount(1000),
     m_ui(new Ui_ThemeWidgetForm)
 {
+    //connect(m_ui->toggleButton, SIGNAL(clicked()), this, SLOT(togglePause()));
     dataTable = new DataTable();
     sinDataList = new DataList();
     chart = new QChart();
@@ -96,8 +95,10 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
         // chartView->repaint();
         // chart->axes(Qt).first()->setRange(0, currentX);
     });
-
+    timer->start();
     updateUI();
+    togglePause();
+
 }
 
 ThemeWidget::~ThemeWidget()
@@ -273,3 +274,12 @@ void ThemeWidget::updateUI()
     //![10]
 }
 
+void ThemeWidget::togglePause()
+{
+    printf("called");
+    if(timer->isActive())
+        timer->stop();
+    else
+        timer->start();
+
+}

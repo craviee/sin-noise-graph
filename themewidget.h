@@ -82,8 +82,7 @@ private:
     QChart *chart;
     QLineSeries *series;
     QTimer* timer;
-
-    // DataTable *noiseDataTable;
+    void togglePause();
 
     Ui_ThemeWidgetForm *m_ui;
 };
