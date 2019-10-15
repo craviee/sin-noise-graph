@@ -30,19 +30,7 @@
 #include "themewidget.h"
 #include "ui_themewidget.h"
 
-#include <QtCharts/QChartView>
-#include <QtCharts/QPieSeries>
-#include <QtCharts/QPieSlice>
-#include <QtCharts/QAbstractBarSeries>
-#include <QtCharts/QPercentBarSeries>
-#include <QtCharts/QStackedBarSeries>
-#include <QtCharts/QBarSeries>
-#include <QtCharts/QBarSet>
-#include <QtCharts/QLineSeries>
-#include <QtCharts/QSplineSeries>
-#include <QtCharts/QScatterSeries>
-#include <QtCharts/QAreaSeries>
-#include <QtCharts/QLegend>
+#include <QtCharts>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QFormLayout>
 #include <QtWidgets/QComboBox>
@@ -54,26 +42,31 @@
 #include <QtCharts/QBarCategoryAxis>
 #include <QtWidgets/QApplication>
 #include <QtCharts/QValueAxis>
+#include<QDebug>
 
 ThemeWidget::ThemeWidget(QWidget *parent) :
     QWidget(parent),
-    m_listCount(3),
+    m_listCount(1),
     m_valueMax(10),
-    m_valueCount(7),
-    m_dataTable(generateRandomData(m_listCount, m_valueMax, m_valueCount)),
+    m_valueCount(1000),
     m_ui(new Ui_ThemeWidgetForm)
 {
+    dataTable = new DataTable();
+    sinDataList = new DataList();
+    chart = new QChart();
+    generateRandomData(1, 10, 10);
     m_ui->setupUi(this);
     populateThemeBox();
     populateAnimationBox();
     populateLegendBox();
-
+    series = new QLineSeries(chart);
     //create charts
 
     QChartView *chartView;
 
     //![5]
-    chartView = new QChartView(createLineChart());
+    createLineChart();
+    chartView = new QChartView(chart);
     m_ui->gridLayout->addWidget(chartView, 1, 2);
     //![5]
     m_charts << chartView;
@@ -87,6 +80,23 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     pal.setColor(QPalette::WindowText, QRgb(0x404044));
     qApp->setPalette(pal);
 
+    timer = new QTimer();
+    timer->setInterval(10); //Time in milliseconds
+    //timer->setSingleShot(false); //Setting this to true makes the timer run only once
+    connect(timer, &QTimer::timeout, this, [=](){
+        // dataTable[0].push_back(Data(QPointF(0,qSin(0)), ""));
+        
+        currentX += 0.01;
+        QPointF value(currentX,qSin(currentX));
+        // QString label = "Slice " + QString::number(i) + ":" + QString::number(j);
+        // *sinDataList << Data(value, "");
+        series->append(value);
+        // printf("currentX: %lf\n",currentX);
+        chart->axes(Qt::Horizontal).first()->setRange(currentX-10, currentX);
+        // chartView->repaint();
+        // chart->axes(Qt).first()->setRange(0, currentX);
+    });
+
     updateUI();
 }
 
@@ -95,25 +105,26 @@ ThemeWidget::~ThemeWidget()
     delete m_ui;
 }
 
-DataTable ThemeWidget::generateRandomData(int listCount, int valueMax, int valueCount) const
+DataTable ThemeWidget::generateRandomData(int listCount, int valueMax, int valueCount)
 {
-    DataTable dataTable;
 
     // generate random data
     for (int i(0); i < listCount; i++) {
-        DataList dataList;
         qreal yValue(0);
-        for (int j(0); j < valueCount; j++) {
-            yValue = yValue + QRandomGenerator::global()->bounded(valueMax / (qreal) valueCount);
-            QPointF value((j + QRandomGenerator::global()->generateDouble()) * ((qreal) m_valueMax / (qreal) valueCount),
-                          yValue);
-            QString label = "Slice " + QString::number(i) + ":" + QString::number(j);
-            dataList << Data(value, label);
+        for (currentX =0; currentX < valueCount; currentX+=0.01) {
+            // yValue = yValue + QRandomGenerator::global()->bounded(valueMax / (qreal) valueCount);
+            // QPointF value((j + QRandomGenerator::global()->generateDouble()) * ((qreal) m_valueMax / (qreal) valueCount),
+                        //   yValue);
+            QPointF value(currentX,qSin(currentX));
+            // QString label = "Slice " + QString::number(i) + ":" + QString::number(j);
+            *sinDataList << Data(value, "");
+           // currentX = j;
         }
-        dataTable << dataList;
+
+        *dataTable << *sinDataList;
     }
 
-    return dataTable;
+    return *dataTable;
 }
 
 void ThemeWidget::populateThemeBox()
@@ -148,18 +159,17 @@ void ThemeWidget::populateLegendBox()
     m_ui->legendComboBox->addItem("Legend Right", Qt::AlignRight);
 }
 
-QChart *ThemeWidget::createLineChart() const
+QChart *ThemeWidget::createLineChart()
 {
     //![1]
-    QChart *chart = new QChart();
-    chart->setTitle("Line chart");
+    
+    chart->setTitle("Sin(t) with noise");
     //![1]
 
     //![2]
     QString name("Series ");
     int nameIndex = 0;
-    for (const DataList &list : m_dataTable) {
-        QLineSeries *series = new QLineSeries(chart);
+    for (const DataList &list : *dataTable) {
         for (const Data &data : list)
             series->append(data.first);
         series->setName(name + QString::number(nameIndex));
@@ -170,8 +180,8 @@ QChart *ThemeWidget::createLineChart() const
 
     //![3]
     chart->createDefaultAxes();
-    chart->axes(Qt::Horizontal).first()->setRange(0, m_valueMax);
-    chart->axes(Qt::Vertical).first()->setRange(0, m_valueCount);
+    chart->axes(Qt::Horizontal).first()->setRange(0, 20);
+    chart->axes(Qt::Vertical).first()->setRange(-2, 2);
     //![3]
     //![4]
     // Add space to label to add space between labels and axis

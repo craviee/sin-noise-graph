@@ -31,7 +31,9 @@
 #define THEMEWIDGET_H
 
 #include <QtWidgets/QWidget>
-#include <QtCharts/QChartGlobal>
+#include <QtCharts>
+#include <QtMath>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
@@ -61,19 +63,27 @@ private Q_SLOTS:
     void updateUI();
 
 private:
-    DataTable generateRandomData(int listCount, int valueMax, int valueCount) const;
+    DataTable generateRandomData(int listCount, int valueMax, int valueCount);
     void populateThemeBox();
     void populateAnimationBox();
     void populateLegendBox();
     void connectSignals();
-    QChart *createLineChart() const;
+    QChart *createLineChart();
 
 private:
     int m_listCount;
     int m_valueMax;
     int m_valueCount;
+    double currentX;
     QList<QChartView *> m_charts;
-    DataTable m_dataTable;
+    DataTable *dataTable;
+    DataList *sinDataList;
+    DataList *noiseDataList;
+    QChart *chart;
+    QLineSeries *series;
+    QTimer* timer;
+
+    // DataTable *noiseDataTable;
 
     Ui_ThemeWidgetForm *m_ui;
 };
