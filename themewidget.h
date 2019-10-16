@@ -31,7 +31,10 @@
 #define THEMEWIDGET_H
 
 #include <QtWidgets/QWidget>
-#include <QtCharts/QChartGlobal>
+#include <QtCharts>
+#include <QtMath>
+#include <QTimer>
+#include <random>
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
@@ -44,8 +47,7 @@ class QChartView;
 class QChart;
 QT_CHARTS_END_NAMESPACE
 
-typedef QPair<QPointF, QString> Data;
-typedef QList<Data> DataList;
+typedef QList<QPointF> DataList;
 typedef QList<DataList> DataTable;
 
 QT_CHARTS_USE_NAMESPACE
@@ -60,26 +62,39 @@ public:
 private Q_SLOTS:
     void updateUI();
 
+private slots:
+    void togglePause();
+    void amplitudeChange(double _newValue);
+    void meanChange(double _newValue);
+    void stdDevChange(double _newValue);
+    void newPoint();
+
 private:
-    DataTable generateRandomData(int listCount, int valueMax, int valueCount) const;
+    void generateInitialData(const int _xAxisRange);
     void populateThemeBox();
     void populateAnimationBox();
     void populateLegendBox();
-    void connectSignals();
-    QChart *createAreaChart() const;
-    QChart *createBarChart(int valueCount) const;
-    QChart *createPieChart() const;
-    QChart *createLineChart() const;
-    QChart *createSplineChart() const;
-    QChart *createScatterChart() const;
+    void updateDist();
 
 private:
-    int m_listCount;
-    int m_valueMax;
-    int m_valueCount;
-    QList<QChartView *> m_charts;
-    DataTable m_dataTable;
+    
+    const int xAxisRange = 10;
+    const int newPointSpeedMiliSecond = 10;
+    const double newPointDistanceIncrease = 0.01;
 
+    double currentX;
+    double amplitude = 1.0;
+    double mean = 0.0;
+    double stdDev = 0.1;
+
+    std::default_random_engine generator;
+    QList<QChartView *> m_charts;
+    QChart *chart;
+    QLineSeries *sinSeries;
+    QLineSeries *noiseSeries;
+    QTimer* timer;
+    std::normal_distribution<double> *dist;
+    
     Ui_ThemeWidgetForm *m_ui;
 };
 
