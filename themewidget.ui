@@ -10,6 +10,9 @@
     <height>614</height>
    </rect>
   </property>
+  <property name="windowTitle">
+   <string>Sin(t) with noise</string>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0" colspan="3">
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -88,6 +91,9 @@
       <widget class="QDoubleSpinBox" name="meanBox">
        <property name="decimals">
         <number>5</number>
+       </property>
+       <property name="minimum">
+        <double>-99.989999999999995</double>
        </property>
       </widget>
      </item>
@@ -191,8 +197,76 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>toggleButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ThemeWidgetForm</receiver>
+   <slot>togglePause()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>amplitudeBox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>ThemeWidgetForm</receiver>
+   <slot>amplitudeChange(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>meanBox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>ThemeWidgetForm</receiver>
+   <slot>meanChange(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>stdDevBox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>ThemeWidgetForm</receiver>
+   <slot>stdDevChange(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>updateUI()</slot>
+  <slot>togglePause()</slot>
+  <slot>amplitudeChange(double)</slot>
+  <slot>meanChange(double)</slot>
+  <slot>stdDevChange(double)</slot>
  </slots>
 </ui>

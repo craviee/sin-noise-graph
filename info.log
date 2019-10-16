@@ -14,3 +14,8 @@ setting repo on github, making GUI changes, creating this log file and cleaning 
 15/10/19 - 17-20 - 3h
 Setting the sin(t) function, also creating a timer and a method to include new points in an automated way.
 Also the x-axis is updated to give the feeling of flow.
+
+16/10/19 - 18-19 - 1h
+Setting noise function, also implementation of functions that changes the behaviour of the sin and noise signals
+based on buttons.
+

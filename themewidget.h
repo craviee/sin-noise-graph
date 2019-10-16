@@ -34,6 +34,7 @@
 #include <QtCharts>
 #include <QtMath>
 #include <QTimer>
+#include <random>
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
@@ -62,6 +63,12 @@ public:
 private Q_SLOTS:
     void updateUI();
 
+private slots:
+    void togglePause();
+    void amplitudeChange(double newValue);
+    void meanChange(double newValue);
+    void stdDevChange(double newValue);
+
 private:
     DataTable generateRandomData(int listCount, int valueMax, int valueCount);
     void populateThemeBox();
@@ -69,20 +76,30 @@ private:
     void populateLegendBox();
     void connectSignals();
     QChart *createLineChart();
+    void updateDist();
 
 private:
+    
+
     int m_listCount;
     int m_valueMax;
     int m_valueCount;
     double currentX;
+    double amplitude = 1.0;
+    double mean = 0.0;
+    double stdDev = 0.1;
+
+    std::default_random_engine generator;
     QList<QChartView *> m_charts;
     DataTable *dataTable;
     DataList *sinDataList;
     DataList *noiseDataList;
     QChart *chart;
     QLineSeries *series;
+    QLineSeries *series2;
     QTimer* timer;
-    void togglePause();
+    std::normal_distribution<double> *dist;
+    
 
     Ui_ThemeWidgetForm *m_ui;
 };

@@ -1,5 +1,7 @@
 # Qt
 *.user
+build/
+!build/Makefile
 
 # Prerequisites
 *.d
