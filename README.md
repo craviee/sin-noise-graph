@@ -31,5 +31,5 @@ $ make
 ## Run
 
 ```
-./chartthemes
+$ ./chartthemes
 ```
