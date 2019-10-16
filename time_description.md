@@ -1,26 +1,35 @@
-Usefull links:
-https://stackoverflow.com/questions/32889309/adding-gaussian-noise
-https://en.cppreference.com/w/cpp/numeric/random/normal_distribution
-https://www.mathworks.com/help/comm/ref/awgn.html
-https://doc.qt.io/qt-5/qtcharts-chartthemes-example.html
+# Description of used time and links source
 
-Time used: 8h
 
-Description of time:
+## Total Time used: 8h
 
-14/10/19 - 8~10 - 2h
+## Description of time:
+
+* _14/10/19 - 8~10_ - **2h**
+
 Studying the problem, planning software architecture,
-creating the project using ChartThemes as template (https://doc.qt.io/qt-5/qtcharts-chartthemes-example.html),
+creating the project using QT Example project [ChartThemes](https://doc.qt.io/qt-5/qtcharts-chartthemes-example.html) as template,
 setting repo on github, making GUI changes, creating this log file and cleaning methods that won't be used.
 
-15/10/19 - 17-20 - 3h
-Setting the sin(t) function, also creating a timer and a method to include new points in an automated way.
-Also the x-axis is updated to give the feeling of flow.
+* _15/10/19 - 17~20_ - **3h**
 
-16/10/19 - 18-19 - 1h
-Setting noise function, also implementation of functions that changes the behaviour of the sin and noise signals
-based on buttons.
+Setting the _sin(t)_ function, also creating a timer and a method to include new points in an automated way.
+Also the _x-Axis_ is updated to give the feeling of motion.
 
-16/10/19 - 19-21 - 2h
+* _16/10/19 - 18~19_ - **1h**
+
+Setting noise function, also implementation of functions that changes the behaviour of the _sin(t)_ and _gaussian noise_ signals based on buttons.
+
+* _16/10/19 - 19~21_ - **2h**
+
 Developing last functionalities, cleaning and optimizing code, also creating documentation
 and updating the repository.
+
+## Usefull links:
+[Adding Gaussian noise on C++](https://stackoverflow.com/questions/32889309/adding-gaussian-noise)
+
+[Documentation about STL Normal Distribution](https://en.cppreference.com/w/cpp/numeric/random/normal_distribution)
+
+[Add Gaussian Noise to a Signal](https://www.mathworks.com/help/comm/ref/awgn.html)
+
+[Qt Example Project ChartThemes](https://doc.qt.io/qt-5/qtcharts-chartthemes-example.html)
