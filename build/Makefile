@@ -741,19 +741,9 @@ moc_themewidget.o: moc_themewidget.cpp
 
 ####### Install
 
-install_target: first FORCE
-	@test -d $(INSTALL_ROOT)/home/craviee/Git/sin-noise-graph/./charts/chartthemes || mkdir -p $(INSTALL_ROOT)/home/craviee/Git/sin-noise-graph/./charts/chartthemes
-	-$(QINSTALL_PROGRAM) $(QMAKE_TARGET) $(INSTALL_ROOT)/home/craviee/Git/sin-noise-graph/charts/chartthemes/$(QMAKE_TARGET)
-	-$(STRIP) $(INSTALL_ROOT)/home/craviee/Git/sin-noise-graph/charts/chartthemes/$(QMAKE_TARGET)
+install:  FORCE
 
-uninstall_target: FORCE
-	-$(DEL_FILE) $(INSTALL_ROOT)/home/craviee/Git/sin-noise-graph/charts/chartthemes/$(QMAKE_TARGET)
-	-$(DEL_DIR) $(INSTALL_ROOT)/home/craviee/Git/sin-noise-graph/./charts/chartthemes/ 
-
-
-install: install_target  FORCE
-
-uninstall: uninstall_target  FORCE
+uninstall:  FORCE
 
 FORCE:
 
