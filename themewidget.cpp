@@ -42,37 +42,41 @@
 #include <QtCharts/QBarCategoryAxis>
 #include <QtWidgets/QApplication>
 #include <QtCharts/QValueAxis>
-#include <QDebug>
-#include <QPushButton>
 
 ThemeWidget::ThemeWidget(QWidget *parent) :
     QWidget(parent),
     m_ui(new Ui_ThemeWidgetForm)
 {
-
-    dataTable = new DataTable();
-    sinDataList = new DataList();
-    noiseDataList = new DataList();
-    chart = new QChart();
-
-    updateDist();
-
-    generateRandomData(1, 10, 10);
     m_ui->setupUi(this);
     populateThemeBox();
     populateAnimationBox();
     populateLegendBox();
-    series = new QLineSeries(chart);
-    series2 = new QLineSeries(chart);
-    //create charts
-    
     QChartView *chartView;
 
-    //![5]
-    createLineChart();
+    // Declarations
+    chart = new QChart();
+    sinSeries = new QLineSeries(chart);
+    noiseSeries = new QLineSeries(chart);
+    timer = new QTimer();
+
+    // Generating normal distribution and initial data
+    updateDist();
+    generateInitialData(xAxisRange);
+
+    // Setting initial config 
+    chart->setTitle("Sin(t) with Gaussian noise");
+    sinSeries->setName("Sin(t)");
+    noiseSeries->setName("Gaussian noise");
+    chart->addSeries(noiseSeries);
+    chart->addSeries(sinSeries);
+    chart->createDefaultAxes();
+    chart->axes(Qt::Horizontal).first()->setRange(0, xAxisRange );
+    chart->axes(Qt::Vertical).first()->setRange(-amplitude -1, amplitude + 1);
+    QValueAxis *axisY = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first());
+    Q_ASSERT(axisY);
+
     chartView = new QChartView(chart);
     m_ui->gridLayout->addWidget(chartView, 1, 2);
-    //![5]
     m_charts << chartView;
 
     // Set defaults
@@ -83,33 +87,34 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     pal.setColor(QPalette::Window, QRgb(0xf0f0f0));
     pal.setColor(QPalette::WindowText, QRgb(0x404044));
     qApp->setPalette(pal);
-
-    timer = new QTimer();
-    timer->setInterval(10); //Time in milliseconds
-    //timer->setSingleShot(false); //Setting this to true makes the timer run only once
-    connect(timer, &QTimer::timeout, this, [=](){
-        // dataTable[0].push_back(Data(QPointF(0,qSin(0)), ""));
-        
-        currentX += 0.01;
-        qreal sinValue = amplitude*qSin(currentX);
-        QPointF sinPoint(currentX, sinValue);
-        QPointF noisePoint(currentX, sinValue + (*dist)(generator));
-        // QString label = "Slice " + QString::number(i) + ":" + QString::number(j);
-        // *sinDataList << Data(value, "");
-        series->append(sinPoint);
-        series2->append(noisePoint);
-        // printf("currentX: %lf\n",currentX);
-        chart->axes(Qt::Horizontal).first()->setRange(currentX-10, currentX);
-        chart->axes(Qt::Vertical).first()->setRange(-amplitude - 1, amplitude + 1);
-        series->removePoints(0,1);
-        series2->removePoints(0,1);
-        // chartView->repaint();
-        // chart->axes(Qt).first()->setRange(0, currentX);
-    });
-    timer->start();
     updateUI();
-//    togglePause();
 
+    // Setting timer tick, assigning the function and starting
+    timer->setInterval(newPointSpeedMiliSecond); 
+    connect(timer,SIGNAL(timeout()), this, SLOT(newPoint()));
+    timer->start();
+}
+
+void ThemeWidget::newPoint()
+{
+    // Updating x Value and calculating new sin(t) value
+    currentX += newPointDistanceIncrease;
+    qreal sinValue = amplitude*qSin(currentX);
+
+    // Creating new points
+    QPointF sinPoint(currentX, sinValue);
+    QPointF noisePoint(currentX, sinValue + (*dist)(generator));
+
+    // Adding points to series
+    sinSeries->append(sinPoint);
+    noiseSeries->append(noisePoint);
+
+    // Setting new x-Axis range to cause sensor of motion
+    chart->axes(Qt::Horizontal).first()->setRange(currentX - xAxisRange, currentX);
+
+    // Deleting old points to control used memory
+    sinSeries->removePoints(0,1);
+    noiseSeries->removePoints(0,1);
 }
 
 ThemeWidget::~ThemeWidget()
@@ -117,32 +122,19 @@ ThemeWidget::~ThemeWidget()
     delete m_ui;
 }
 
-DataTable ThemeWidget::generateRandomData(int listCount, int valueMax, int valueCount)
+void ThemeWidget::generateInitialData(const int _xAxisRange)
 {
-    
     qreal sinValue;
-    // generate random data
-    // for (int i(0); i < listCount; i++) {
-        qreal yValue(0);
-        for (currentX =0; currentX < valueCount; currentX+=0.01) {
-            // yValue = yValue + QRandomGenerator::global()->bounded(valueMax / (qreal) valueCount);
-            // QPointF value((j + QRandomGenerator::global()->generateDouble()) * ((qreal) m_valueMax / (qreal) valueCount),
-                        //   yValue);
-            sinValue = amplitude*qSin(currentX);
-            QPointF sinPoint(currentX, sinValue);
-            // QPointF noisePoint(currentX, sinValue + (*dist)(generator));
-            
-            QPointF noisePoint(currentX, sinValue + (*dist)(generator));
-            // QString label = "Slice " + QString::number(i) + ":" + QString::number(j);
-            *sinDataList << Data(sinPoint, "");
-            *noiseDataList << Data(noisePoint, "");
-           // currentX = j;
-        }
-        *dataTable << *sinDataList;
-        *dataTable << *noiseDataList;
-    // }
+    for (currentX = 0; currentX < _xAxisRange; currentX += newPointDistanceIncrease)
+    {
+        sinValue = amplitude*qSin(currentX);
 
-    return *dataTable;
+        QPointF sinPoint(currentX, sinValue);
+        QPointF noisePoint(currentX, sinValue + (*dist)(generator));
+
+        sinSeries->append(sinPoint);
+        noiseSeries->append(noisePoint);
+    }
 }
 
 void ThemeWidget::populateThemeBox()
@@ -175,65 +167,21 @@ void ThemeWidget::populateLegendBox()
     m_ui->legendComboBox->addItem("Legend Right", Qt::AlignRight);
 }
 
-QChart *ThemeWidget::createLineChart()
-{
-    //![1]
-    
-    chart->setTitle("Sin(t) with noise");
-    //![1]
-
-    //![2]
-    // QString name("Series ");
-    // int nameIndex = 0;
-    // for (const DataList &list : *dataTable) {
-    for (const Data &data : *sinDataList)
-        series->append(data.first);
-    for (const Data &data : *noiseDataList)
-        series2->append(data.first);
-    series->setName("Sin(t)");
-    series2->setName("Gaussian noise");
-    
-    chart->addSeries(series2);
-    chart->addSeries(series);
-    // }
-    //![2]
-
-    //![3]
-    chart->createDefaultAxes();
-    chart->axes(Qt::Horizontal).first()->setRange(0, 20);
-    chart->axes(Qt::Vertical).first()->setRange(-amplitude -1, amplitude + 1);
-    //![3]
-    //![4]
-    // Add space to label to add space between labels and axis
-    QValueAxis *axisY = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first());
-    Q_ASSERT(axisY);
-    axisY->setLabelFormat("%.1f  ");
-    //![4]
-
-    return chart;
-}
-
 void ThemeWidget::updateUI()
 {
-    //![6]
     QChart::ChartTheme theme = static_cast<QChart::ChartTheme>(
                 m_ui->themeComboBox->itemData(m_ui->themeComboBox->currentIndex()).toInt());
-    //![6]
     const auto charts = m_charts;
     if (!m_charts.isEmpty() && m_charts.at(0)->chart()->theme() != theme) {
         for (QChartView *chartView : charts) {
-            //![7]
             chartView->chart()->setTheme(theme);
-            //![7]
         }
 
         // Set palette colors based on selected theme
-        //![8]
         QPalette pal = window()->palette();
         if (theme == QChart::ChartThemeLight) {
             pal.setColor(QPalette::Window, QRgb(0xf0f0f0));
             pal.setColor(QPalette::WindowText, QRgb(0x404044));
-        //![8]
         } else if (theme == QChart::ChartThemeDark) {
             pal.setColor(QPalette::Window, QRgb(0x121218));
             pal.setColor(QPalette::WindowText, QRgb(0xd6d6d6));
@@ -260,24 +208,19 @@ void ThemeWidget::updateUI()
     }
 
     // Update antialiasing
-    //![11]
     bool checked = m_ui->antialiasCheckBox->isChecked();
     for (QChartView *chart : charts)
         chart->setRenderHint(QPainter::Antialiasing, checked);
-    //![11]
 
     // Update animation options
-    //![9]
     QChart::AnimationOptions options(
                 m_ui->animatedComboBox->itemData(m_ui->animatedComboBox->currentIndex()).toInt());
     if (!m_charts.isEmpty() && m_charts.at(0)->chart()->animationOptions() != options) {
         for (QChartView *chartView : charts)
             chartView->chart()->setAnimationOptions(options);
     }
-    //![9]
 
     // Update legend alignment
-    //![10]
     Qt::Alignment alignment(
                 m_ui->legendComboBox->itemData(m_ui->legendComboBox->currentIndex()).toInt());
 
@@ -290,7 +233,6 @@ void ThemeWidget::updateUI()
             chartView->chart()->legend()->show();
         }
     }
-    //![10]
 }
 
 void ThemeWidget::togglePause()
@@ -301,21 +243,21 @@ void ThemeWidget::togglePause()
         timer->start();
 }
 
-void ThemeWidget::amplitudeChange(double newValue)
+void ThemeWidget::amplitudeChange(double _newValue)
 {
-    amplitude = newValue;
+    amplitude = _newValue;
     chart->axes(Qt::Vertical).first()->setRange(-amplitude -1, amplitude + 1);
 }
 
-void ThemeWidget::meanChange(double newValue)
+void ThemeWidget::meanChange(double _newValue)
 {
-    mean = newValue;
+    mean = _newValue;
     updateDist();
 }
 
-void ThemeWidget::stdDevChange(double newValue)
+void ThemeWidget::stdDevChange(double _newValue)
 {
-    stdDev = newValue;
+    stdDev = _newValue;
     updateDist();
 }
 
