@@ -1,5 +1,4 @@
 QT += charts
-requires(qtConfig(combobox))
 
 HEADERS += \
     themewidget.h
